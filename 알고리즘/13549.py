@@ -1,23 +1,32 @@
+from collections import deque
 
-N = 5
-K = 17
-T = 0
+def find_fastest_time(N, K):
+    if N >= K:
+        return N - K  # 뒤로만 가는 경우는 -1씩 이동만 하면 됨
 
-def find_K(N, t):
-    
-    A = find_K(2*N, t)
-    B = find_K(N+1, t+1)
-    C = find_K(N-1, t-1)
+    MAX = 100000
+    visited = [-1] * (MAX + 1)  # 방문 시간을 저장
+    queue = deque([N])
+    visited[N] = 0  # 시작 위치
 
-# K 와 일치하면, 그때의 더 적은 시간을 T 에 저장. 
-    if A == K:
-        T = min(T, t)
-    if B == K:
-        T = min(T, t)
-    if C == K:
-        T = min(T, t)
+    while queue:
+        x = queue.popleft()
 
-    return N
+        # 순간이동(0초 소요)은 먼저 확인하여 먼저 방문하도록 함
+        for next_pos in (x - 1, 2 * x, x + 1):
+            if 0 <= next_pos <= MAX and visited[next_pos] == -1:
+                if next_pos == 2 * x:
+                    visited[next_pos] = visited[x]  # 순간이동은 시간이 증가하지 않음
+                    queue.append(next_pos)  # 우선적으로 탐색
+                else:
+                    visited[next_pos] = visited[x] + 1  # 걷는 경우는 1초 추가
+                    queue.append(next_pos)
 
+                if next_pos == K:  # 동생 위치에 도달하면 종료
+                    return visited[next_pos]
 
-find_K(N, T)
+    return -1  # (문제 조건상 항상 도달 가능하므로 이 경우는 없음)
+
+# 입력 받기
+N, K = map(int, input().split())
+print(find_fastest_time(N, K))
